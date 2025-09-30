@@ -1,0 +1,52 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: stock-prediction-dashboard
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/cpu-throttling: "false"
+spec:
+  template:
+    metadata:
+      annotations:
+        # Keep at least 1 instance for faster response
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "5"
+        # CPU and memory allocation
+        run.googleapis.com/cpu: "1"
+        run.googleapis.com/memory: "2Gi"
+        # Timeout for requests
+        run.googleapis.com/timeout: "300"
+    spec:
+      containerConcurrency: 40
+      containers:
+      - image: gcr.io/proud-curve-473118-h6/stock-prediction-dashboard:latest
+        ports:
+        - name: http1
+          containerPort: 8501
+        env:
+        - name: API_BASE_URL
+          value: "https://stock-prediction-api-[HASH]-uc.a.run.app"
+        - name: GCP_PROJECT_ID
+          value: "proud-curve-473118-h6"
+        - name: PORT
+          value: "8501"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 30
+  traffic:
+  - percent: 100
+    latestRevision: true

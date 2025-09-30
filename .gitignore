@@ -1,0 +1,92 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# VS Code
+.vscode/
+
+# Environment
+.env
+venv/
+ENV/
+.venv/
+
+# UV/pip
+uv.lock
+pip-compile.lock
+.uv-cache/
+
+# API Keys and sensitive information
+api_key
+api_key_news
+.env
+*.key
+*.pem
+credentials.json
+service-account.json
+gcp-credentials.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local configuration overrides
+config_local.py
+
+# Data folders - ignore all data files
+data/
+raw_data/
+processed_data/
+training_data/
+*.csv
+*.parquet
+*.pkl
+*.h5
+*.hdf5
+
+# Model files (ignore all contents except keep folder structure)
+models/*
+!models/.gitkeep
+checkpoints/
+*.pth
+*.pt
+
+# Cache and temporary files
+.cache/
+*.cache
+tmp/
+temp/
+*.tmp
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# UV specific
+.uv/
+
+# GCP and cloud specific
+.gcp/
+!models/vosk-model-small-en-us-0.15/.gitkeep
+
+# Ignore .specstory file or directory
+.specstory
+uv.lock
+
+JournalBuilder_Installer/*
+
+instructions.txt
+
+cleanup_backup/*

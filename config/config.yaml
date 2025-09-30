@@ -1,0 +1,143 @@
+# Main configuration for stock prediction system
+project:
+  name: "stock-prediction"
+  version: "0.1.0"
+  description: "Stock price prediction using news sentiment and financial indicators"
+
+# Data collection settings
+data:
+  start_date: "2024-09-01"
+  end_date: "2025-08-31"
+  prediction_horizon_days: 7
+  news_lookback_days: 7
+  trading_days_per_year: 252
+  
+  # Data storage
+  raw_data_path: "data/raw"
+  processed_data_path: "data/processed"
+  training_data_path: "data/training"
+  
+  # File formats
+  stock_data_format: "parquet"
+  news_data_format: "parquet"
+  features_format: "parquet"
+
+# News API configuration
+news_api:
+  provider: "newsapi"
+  rate_limit_requests_per_minute: 50
+  rate_limit_requests_per_day: 1000
+  language: "en"
+  sort_by: "publishedAt"
+  
+  # News filtering
+  domains: 
+    - "reuters.com"
+    - "bloomberg.com"
+    - "wsj.com"
+    - "cnbc.com"
+    - "marketwatch.com"
+    - "fool.com"
+    - "seekingalpha.com"
+  
+  exclude_domains:
+    - "reddit.com"
+    - "twitter.com"
+    - "facebook.com"
+
+# Stock data configuration
+stock_data:
+  provider: "yfinance"
+  interval: "1d"  # Daily data
+  
+  # Technical indicators to calculate
+  indicators:
+    - "sma_20"  # 20-day simple moving average
+    - "rsi_14"  # 14-day RSI
+    - "macd"    # MACD
+    - "bb_upper"  # Bollinger Bands
+    - "bb_lower"
+    - "volume_sma_20"  # Volume moving average
+    - "volatility_20"  # 20-day volatility
+
+# Model configuration
+model:
+  # News embedding model
+  news_embedding:
+    model_name: "ProsusAI/finbert"
+    embedding_dim: 768
+    max_length: 512
+    batch_size_embedding: 16
+  
+  # Prediction model
+  predictor:
+    model_type: "mlp"
+    hidden_layers: [512, 256, 128]
+    dropout_rate: 0.3
+    activation: "relu"
+    output_activation: "linear"
+  
+  # Training parameters  
+  training:
+    batch_size: 32
+    epochs: 50
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    early_stopping_patience: 10
+    validation_split: 0.2
+    
+  # Feature engineering
+  features:
+    news_embedding_aggregation: "mean"  # mean, max, weighted_mean
+    financial_features_normalization: "standard"  # standard, minmax, robust
+    target_transformation: "log_return"  # raw, log_return, percent_change
+
+# Cloud storage configuration
+gcp:
+  project_id: "proud-curve-473118-h6"
+  bucket_name: "stock-prediction-data-bucket"
+  region: "us-central1"
+  
+  # Storage paths in bucket
+  raw_data_prefix: "raw_data"
+  processed_data_prefix: "processed_data"
+  models_prefix: "models"
+  logs_prefix: "logs"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/stock_prediction.log"
+  max_file_size_mb: 50
+  backup_count: 5
+
+# API configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  cors_origins: ["*"]
+  rate_limit: "100/minute"
+
+# Dashboard configuration  
+dashboard:
+  host: "0.0.0.0"
+  port: 8501
+  title: "Stock Prediction Dashboard"
+  refresh_interval_seconds: 300
+  
+  # Metrics to display
+  metrics:
+    - "mae"
+    - "rmse"
+    - "r2_score"
+    - "directional_accuracy"
+    - "sharpe_ratio"
+
+# Cost optimization settings
+cost_optimization:
+  use_spot_instances: true
+  auto_shutdown_idle_minutes: 30
+  batch_size_limit: 1000
+  max_concurrent_requests: 10

@@ -1,0 +1,129 @@
+# Stock symbols configuration
+# Major tech stocks - high volume and news coverage
+tech_stocks:
+  - symbol: "AAPL"
+    name: "Apple Inc."
+    sector: "Technology"
+    keywords: ["apple", "iphone", "ipad", "mac", "tim cook", "app store"]
+    
+  - symbol: "GOOGL"
+    name: "Alphabet Inc."
+    sector: "Technology"
+    keywords: ["google", "alphabet", "search", "youtube", "android", "sundar pichai"]
+    
+  - symbol: "MSFT"
+    name: "Microsoft Corporation"
+    sector: "Technology"
+    keywords: ["microsoft", "windows", "office", "azure", "satya nadella"]
+    
+  - symbol: "TSLA"
+    name: "Tesla, Inc."
+    sector: "Automotive"
+    keywords: ["tesla", "elon musk", "electric vehicle", "ev", "model s", "model 3", "model y"]
+    
+  - symbol: "NVDA"
+    name: "NVIDIA Corporation"
+    sector: "Technology"
+    keywords: ["nvidia", "gpu", "artificial intelligence", "ai", "gaming", "data center"]
+
+# Social media and communication
+social_media:
+  - symbol: "META"
+    name: "Meta Platforms, Inc."
+    sector: "Technology"
+    keywords: ["meta", "facebook", "instagram", "whatsapp", "metaverse", "mark zuckerberg"]
+
+# E-commerce and cloud
+cloud_ecommerce:
+  - symbol: "AMZN"
+    name: "Amazon.com, Inc."
+    sector: "Consumer Discretionary"
+    keywords: ["amazon", "aws", "prime", "alexa", "jeff bezos", "andy jassy"]
+
+# Streaming and entertainment
+entertainment:
+  - symbol: "NFLX"
+    name: "Netflix, Inc."
+    sector: "Communication Services"
+    keywords: ["netflix", "streaming", "original content", "subscriber"]
+
+# Enterprise software
+enterprise:
+  - symbol: "CRM"
+    name: "Salesforce, Inc."
+    sector: "Technology"
+    keywords: ["salesforce", "crm", "cloud computing", "marc benioff"]
+    
+  - symbol: "ADBE"
+    name: "Adobe Inc."
+    sector: "Technology"
+    keywords: ["adobe", "creative cloud", "photoshop", "pdf", "digital media"]
+
+# Financial sector representatives
+financial:
+  - symbol: "JPM"
+    name: "JPMorgan Chase & Co."
+    sector: "Financial Services"
+    keywords: ["jpmorgan", "chase", "banking", "jamie dimon"]
+    
+  - symbol: "BAC"
+    name: "Bank of America Corporation"
+    sector: "Financial Services"
+    keywords: ["bank of america", "banking", "merrill lynch"]
+
+# Healthcare representatives
+healthcare:
+  - symbol: "JNJ"
+    name: "Johnson & Johnson"
+    sector: "Healthcare"
+    keywords: ["johnson johnson", "pharmaceutical", "medical devices", "vaccine"]
+    
+  - symbol: "PFE"
+    name: "Pfizer Inc."
+    sector: "Healthcare"
+    keywords: ["pfizer", "pharmaceutical", "vaccine", "covid"]
+
+# Default configuration for data collection
+default_settings:
+  # Minimum volume threshold (shares per day)
+  min_daily_volume: 1000000
+  
+  # Minimum market cap (in billions)
+  min_market_cap_billion: 10
+  
+  # Maximum number of stocks to process in parallel
+  max_parallel_stocks: 5
+  
+  # News search parameters
+  news_search:
+    max_articles_per_day: 50
+    relevance_threshold: 0.6
+    
+  # Data quality filters
+  quality_filters:
+    min_price: 1.0  # Minimum stock price
+    max_price_change_percent: 50  # Maximum single-day price change
+    min_trading_days_per_month: 20  # Minimum trading days required
+
+# Sector weights for portfolio-level analysis
+sector_weights:
+  Technology: 0.6
+  Financial Services: 0.15
+  Healthcare: 0.10
+  Consumer Discretionary: 0.10
+  Communication Services: 0.05
+
+# Stock-specific configurations
+stock_configs:
+  TSLA:
+    # Tesla is more volatile, adjust parameters
+    max_price_change_percent: 100
+    news_weight_multiplier: 1.5  # Tesla news has higher impact
+    
+  NVDA:
+    # NVIDIA news often relates to AI trends
+    additional_keywords: ["artificial intelligence", "machine learning", "crypto mining"]
+    
+  META:
+    # Meta has regulatory concerns
+    additional_keywords: ["regulation", "privacy", "antitrust"]
