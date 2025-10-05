@@ -56,7 +56,6 @@ logs/
 *.log
 notebooks/
 tests/
-README.md
 LICENSE
 .github/
 
@@ -65,7 +64,6 @@ deployment/
 Dockerfile*
 deploy*.py
 setup*.py
-*.md
 
 # Temporary files
 *.tmp

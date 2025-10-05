@@ -15,9 +15,46 @@ import yfinance as yf
 import numpy as np
 from typing import Optional
 
+
 # Add src to path
 project_root = Path(__file__).parent  # This file is in the project root
 sys.path.insert(0, str(project_root / "src"))
+
+# Global state
+MODEL_LOADED = False
+predictor = None
+
+def init_model():
+    """Initialize the model."""
+    global MODEL_LOADED, predictor
+    
+    model_path = project_root / "models" / "stock_predictor"
+    model_file = model_path / "model.pth"
+    
+    if model_file.exists():
+        try:
+            print(f"Loading model from {model_path}")
+            
+            if str(project_root / "src") not in sys.path:
+                sys.path.insert(0, str(project_root / "src"))
+            
+            from src.training.stock_predictor import StockPredictor
+            predictor = StockPredictor()
+            predictor.load_model(model_path)
+            MODEL_LOADED = True
+            print(f"Real trained model loaded successfully from {model_path}")
+        except Exception as e:
+            import traceback
+            print(f"Failed to load real model: {e}")
+            print(f"Full traceback: {traceback.format_exc()}")
+            MODEL_LOADED = False
+            predictor = None
+    else:
+        MODEL_LOADED = False
+        predictor = None
+        print(f"No trained model found at {model_path}")
+    
+    print(f"Stock Prediction API Started - Real Model Loaded: {MODEL_LOADED}")
 
 app = FastAPI(
     title="Stock Prediction API",
@@ -53,46 +90,6 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     version: str
     timestamp: str
-
-# Global state
-MODEL_LOADED = False
-predictor = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the application."""
-    global MODEL_LOADED, predictor
-    
-    # Try to load the real trained model
-    model_path = project_root / "models" / "stock_predictor"
-    model_file = model_path / "model.pth"
-    
-    if model_file.exists():
-        try:
-            # Import and load the real model
-            print(f"Loading model from {model_path}")
-            
-            # Add src to path if not already there
-            if str(project_root / "src") not in sys.path:
-                sys.path.insert(0, str(project_root / "src"))
-            
-            from src.training.stock_predictor import StockPredictor
-            predictor = StockPredictor()
-            predictor.load_model(model_path)
-            MODEL_LOADED = True
-            print(f"Real trained model loaded successfully from {model_path}")
-        except Exception as e:
-            import traceback
-            print(f"Failed to load real model: {e}")
-            print(f"Full traceback: {traceback.format_exc()}")
-            MODEL_LOADED = False
-            predictor = None
-    else:
-        MODEL_LOADED = False
-        predictor = None
-        print(f"No trained model found at {model_path}")
-    
-    print(f"Stock Prediction API Started - Real Model Loaded: {MODEL_LOADED}")
 
 def get_current_stock_price(symbol: str) -> Optional[float]:
     """Get current stock price using yfinance"""
@@ -283,6 +280,18 @@ async def get_supported_symbols():
         "last_updated": datetime.now().isoformat()
     }
 
-# Server startup is handled by uvicorn command, not here
-# This prevents double server startup when imported
-# Use: uvicorn simple_api:app --host 0.0.0.0 --port 8081
+if __name__ == "__main__":
+    import uvicorn
+    print("Starting API server...")
+    
+    # Initialize model before starting server
+    init_model()
+    
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=8889, log_level="info")
+    except KeyboardInterrupt:
+        print("Server stopped by user")
+    except Exception as e:
+        print(f"Server error: {e}")
+        import traceback
+        traceback.print_exc()

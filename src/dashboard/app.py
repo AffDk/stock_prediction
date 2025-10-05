@@ -11,9 +11,12 @@ import plotly.express as px
 from datetime import datetime, timedelta
 import requests
 from pathlib import Path
+import sys
 
-from ..utils.config import config
-from ..utils.logging_config import get_logger
+# Add src directory to Python path for absolute imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.utils.logging_config import get_logger
 
 # Page configuration
 st.set_page_config(
@@ -27,7 +30,7 @@ logger = get_logger(__name__)
 
 # Constants
 # Check if running in cloud (API_BASE_URL environment variable set)
-API_BASE_URL = os.getenv('API_BASE_URL', f"http://localhost:{config.get('api.port', 8000)}")
+API_BASE_URL = os.getenv('API_BASE_URL', "http://localhost:8889")
 SUPPORTED_SYMBOLS = ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN", "NVDA", "META", "NFLX"]
 
 
@@ -46,10 +49,9 @@ def main():
         st.subheader("🤖 Model Status")
         model_status = get_model_status()
         
-        if model_status["status"] == "ready":
+        if model_status.get("model_loaded", False):
             st.success("✅ Model Ready")
-        elif model_status["status"] == "not_trained":
-            st.warning("⚠️ Model Not Trained")
+            st.info(f"API Version: {model_status.get('api_version', 'Unknown')}")
         else:
             st.error("❌ Model Not Available")
         
@@ -107,10 +109,10 @@ def main():
 def get_model_status():
     """Get model status from API."""
     try:
-        response = requests.get(f"{API_BASE_URL}/model/status", timeout=5)
+        response = requests.get(f"{API_BASE_URL}/status", timeout=15)
         if response.status_code == 200:
             return response.json()
-    except:
+    except Exception:
         pass
     
     return {"status": "unavailable"}
@@ -124,7 +126,7 @@ def get_prediction(symbol, days_ahead=7):
             "days_ahead": days_ahead,
             "include_news": True
         }
-        response = requests.post(f"{API_BASE_URL}/predict", json=payload, timeout=10)
+        response = requests.post(f"{API_BASE_URL}/predict", json=payload, timeout=30)
         if response.status_code == 200:
             return response.json()
     except Exception as e:
@@ -144,6 +146,8 @@ def show_predictions_tab(selected_symbols, prediction_days):
     for i, symbol in enumerate(selected_symbols):
         pred = get_prediction(symbol, prediction_days)
         if pred:
+            # Normalize confidence field for both API formats
+            pred['confidence'] = pred.get('confidence', pred.get('confidence_score', 0.5))
             predictions.append(pred)
         progress_bar.progress((i + 1) / len(selected_symbols))
     
@@ -168,9 +172,7 @@ def show_predictions_tab(selected_symbols, prediction_days):
             predicted_price = pred['predicted_price']
             change_percent = pred['predicted_change_percent']
             
-            # Color coding
-            color = "green" if change_percent > 0 else "red"
-            arrow = "📈" if change_percent > 0 else "📉"
+            # Color coding for future use
             
             st.metric(
                 label="Current Price",
@@ -185,7 +187,7 @@ def show_predictions_tab(selected_symbols, prediction_days):
             )
             
             # Confidence
-            confidence = pred['confidence_score']
+            confidence = pred.get('confidence', pred.get('confidence_score', 0.5))
             st.progress(confidence)
             st.caption(f"Confidence: {confidence:.1%}")
             
@@ -195,7 +197,7 @@ def show_predictions_tab(selected_symbols, prediction_days):
     st.subheader("📋 Predictions Summary")
     
     df = pd.DataFrame(predictions)
-    df = df[['symbol', 'current_price', 'predicted_price', 'predicted_change_percent', 'confidence_score']]
+    df = df[['symbol', 'current_price', 'predicted_price', 'predicted_change_percent', 'confidence']]
     df.columns = ['Symbol', 'Current Price', 'Predicted Price', 'Change %', 'Confidence']
     
     # Format columns
@@ -204,7 +206,7 @@ def show_predictions_tab(selected_symbols, prediction_days):
     df['Change %'] = df['Change %'].apply(lambda x: f"{x:+.2f}%")
     df['Confidence'] = df['Confidence'].apply(lambda x: f"{x:.1%}")
     
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width='stretch')
 
 
 def show_performance_tab(selected_symbols):
@@ -242,7 +244,7 @@ def show_performance_tab(selected_symbols):
         title="Prediction Accuracy Over Time"
     )
     fig.update_layout(height=400)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     
     # Performance metrics
     col1, col2 = st.columns(2)
@@ -278,7 +280,7 @@ def show_performance_tab(selected_symbols):
         df_perf['Accuracy'] = df_perf['Accuracy'].apply(lambda x: f"{x:.1%}")
         df_perf['MAE'] = df_perf['MAE'].apply(lambda x: f"{x:.1%}")
         
-        st.dataframe(df_perf, use_container_width=True)
+        st.dataframe(df_perf, width='stretch')
 
 
 def show_news_impact_tab(selected_symbols):
@@ -316,7 +318,7 @@ def show_news_impact_tab(selected_symbols):
             color='Accuracy',
             color_continuous_scale='RdYlGn'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     with col2:
         st.subheader("📊 News Volume Impact")
@@ -337,10 +339,9 @@ def show_news_impact_tab(selected_symbols):
             df_volume,
             x='News_Volume',
             y='Accuracy',
-            title="Accuracy vs. News Article Volume",
-            trendline="ols"
+            title="Accuracy vs. News Article Volume"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     # Recent news summary
     st.subheader("📋 Recent High-Impact News")
@@ -374,7 +375,7 @@ def show_news_impact_tab(selected_symbols):
     df_news = df_news[df_news['Symbol'].isin(selected_symbols)]
     
     if not df_news.empty:
-        st.dataframe(df_news, use_container_width=True)
+        st.dataframe(df_news, width='stretch')
     else:
         st.info("No recent high-impact news for selected symbols.")
 

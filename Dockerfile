@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy UV lockfile and pyproject.toml first for better caching
-COPY uv.lock pyproject.toml ./
+# Copy UV lockfile, pyproject.toml, and README.md first for better caching
+COPY uv.lock pyproject.toml README.md ./
 
 # Install UV package manager
 RUN pip install uv
@@ -23,6 +23,7 @@ RUN uv sync --frozen --no-dev
 COPY src/ ./src/
 COPY config/ ./config/
 COPY models/ ./models/
+COPY simple_api.py ./
 COPY .env* ./
 
 # Create non-root user for security
@@ -36,5 +37,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=10)"
 
-# Run the application
-CMD ["uv", "run", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the simple API application
+CMD ["uv", "run", "uvicorn", "simple_api:app", "--host", "0.0.0.0", "--port", "8000"]

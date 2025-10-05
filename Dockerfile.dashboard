@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy UV lockfile and pyproject.toml first for better caching
-COPY uv.lock pyproject.toml ./
+# Copy UV lockfile, pyproject.toml, and README.md first for better caching
+COPY uv.lock pyproject.toml README.md ./
 
 # Install UV package manager
 RUN pip install uv
@@ -35,5 +35,5 @@ EXPOSE 8501
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8501/_stcore/health', timeout=10)"
 
-# Run Streamlit dashboard
-CMD ["uv", "run", "streamlit", "run", "src/dashboard/app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
+# Run Streamlit dashboard with proper Python path
+CMD ["uv", "run", "python", "-m", "streamlit", "run", "src/dashboard/app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
