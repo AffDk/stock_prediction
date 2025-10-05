@@ -1,6 +1,10 @@
 # Use Python 3.11 slim image for dashboard
 FROM python:3.11-slim
 
+# Build arguments for configurable ports (defaults from config)
+ARG DASHBOARD_PORT=8501
+ENV DEFAULT_PORT=${DASHBOARD_PORT}
+
 # Set working directory
 WORKDIR /app
 
@@ -28,12 +32,12 @@ COPY .env* ./
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 USER app
 
-# Expose port
-EXPOSE 8501
+# Expose port using build argument (configurable)
+EXPOSE ${DEFAULT_PORT}
 
-# Health check
+# Health check using dynamic port from env var or default
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8501/_stcore/health', timeout=10)"
+    CMD python -c "import os, requests; requests.get(f'http://localhost:{os.getenv(\"PORT\", os.getenv(\"DEFAULT_PORT\"))}/_stcore/health', timeout=10)"
 
-# Run Streamlit dashboard with proper Python path
-CMD ["uv", "run", "python", "-m", "streamlit", "run", "src/dashboard/app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
+# Run Streamlit dashboard with dynamic port
+CMD sh -c "uv run python -m streamlit run src/dashboard/app.py --server.address 0.0.0.0 --server.port ${PORT:-${DEFAULT_PORT}} --server.headless true"

@@ -1,6 +1,10 @@
 # Use Python 3.11 slim image for efficient deployments
 FROM python:3.11-slim
 
+# Build arguments for configurable ports (defaults from config)
+ARG API_PORT=8080
+ENV DEFAULT_PORT=${API_PORT}
+
 # Set working directory
 WORKDIR /app
 
@@ -30,12 +34,12 @@ COPY .env* ./
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 USER app
 
-# Expose port
-EXPOSE 8000
+# Expose port using build argument (configurable)
+EXPOSE ${DEFAULT_PORT}
 
-# Health check
+# Health check using dynamic port from env var or default
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=10)"
+    CMD python -c "import os, requests; requests.get(f'http://localhost:{os.getenv(\"PORT\", os.getenv(\"DEFAULT_PORT\"))}/status', timeout=10)"
 
 # Run the simple API application
-CMD ["uv", "run", "uvicorn", "simple_api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "python", "simple_api.py"]

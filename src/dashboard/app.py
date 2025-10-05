@@ -29,8 +29,22 @@ st.set_page_config(
 logger = get_logger(__name__)
 
 # Constants
-# Check if running in cloud (API_BASE_URL environment variable set)
-API_BASE_URL = os.getenv('API_BASE_URL', "http://localhost:8889")
+# Simplified API URL configuration
+def get_api_base_url():
+    """Get API base URL - consistent port everywhere."""
+    # Explicit override always takes precedence
+    if os.getenv('API_BASE_URL'):
+        return os.getenv('API_BASE_URL')
+    
+    # Cloud environment detection
+    if os.getenv('PORT'):
+        # In cloud, assume API is on same domain
+        return "https://stock-prediction-api-345279715976.us-central1.run.app"
+    
+    # Local development - use consistent port 8080
+    return "http://localhost:8080"
+
+API_BASE_URL = get_api_base_url()
 SUPPORTED_SYMBOLS = ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN", "NVDA", "META", "NFLX"]
 
 

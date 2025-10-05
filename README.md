@@ -1,6 +1,18 @@
 # Stock Prediction System
 
-A comprehensive machine learning system for predicting stock prices using neural networks, technical indicators, and news sentiment analysis. The system provides both local development capabilities and cloud deployment options.
+A comprehensive machine learning sy2. **Start Local Services**
+   ```bash
+   # Terminal 1: Start API Server
+   uv run python simple_api.py
+
+   # Terminal 2: Start Dashboard
+   uv run streamlit run src/dashboard/app.py --server.port 8501
+   ```
+
+3. **Access Applications**
+   - **Dashboard**: http://localhost:8501 (Interactive prediction interface)
+   - **API**: http://localhost:8080 (RESTful API server)
+   - **API Docs**: http://localhost:8080/docs (Swagger documentation)icting stock prices using neural networks, technical indicators, and news sentiment analysis. The system provides both local development capabilities and cloud deployment options.
 
 ## 🏗️ Architecture Overview
 
@@ -64,10 +76,10 @@ stock_prediction/
 
 2. **Start Local Services**
    ```bash
-   # Terminal 1: Start API Server  
+   # Terminal 1: Start API Server (auto-detects local mode)
    uv run python simple_api.py
 
-   # Terminal 2: Start Dashboard
+   # Terminal 2: Start Dashboard (auto-connects to local API)
    uv run streamlit run src/dashboard/app.py --server.port 8503
    ```
 
@@ -208,10 +220,10 @@ docker-compose up -d
 
 # Or build individual services
 docker build -t stock-api .
-docker run -p 8889:8889 stock-api
+docker run -p 8080:8080 stock-api
 
-docker build -f Dockerfile.dashboard -t stock-dashboard .  
-docker run -p 8503:8503 stock-dashboard
+docker build -f Dockerfile.dashboard -t stock-dashboard .
+docker run -p 8501:8501 stock-dashboard
 ```
 
 ### 2. Google Cloud Run Deployment
@@ -269,14 +281,17 @@ kubectl get services
 ### Environment Variables
 ```bash
 # Core Configuration
-API_BASE_URL=http://localhost:8889    # Dashboard API endpoint
-LOG_LEVEL=INFO                        # Logging verbosity
-MODEL_PATH=models/stock_predictor     # Model storage location
+API_BASE_URL=http://localhost:8080   # Dashboard API endpoint (optional override)
+LOG_LEVEL=INFO                       # Logging verbosity
+MODEL_PATH=models/stock_predictor    # Model storage location
 
-# API Configuration  
-API_HOST=0.0.0.0                     # API server host
-API_PORT=8889                        # API server port
-API_WORKERS=1                        # Gunicorn workers (production)
+# Port Configuration (consistent everywhere)
+PORT=8080                           # API server port (Google Cloud Run sets this)
+# Dashboard uses 8501 by default (configurable in config.yaml)
+
+# Override ports if needed (edit config/config.yaml):
+# api.port: 8080
+# dashboard.port: 8501
 
 # Model Configuration
 BATCH_SIZE=32                        # Training batch size
@@ -290,11 +305,40 @@ NEWS_SOURCES=yahoo,reuters,bloomberg # News data sources
 TECHNICAL_INDICATORS=sma,ema,rsi,macd # Active indicators
 ```
 
+### Port Configuration Strategy
+**📍 Single Source of Truth: `config/config.yaml`**
+
+All port settings are defined in one place:
+```yaml
+api:
+  port: 8080      # API server port
+
+dashboard:
+  port: 8501      # Dashboard port
+```
+
+**How It Works:**
+- **Local Development**: Reads from `config.yaml`
+- **Docker Build**: Uses build args from `config.yaml` 
+- **Cloud Deployment**: Google Cloud Run sets `PORT` env var (overrides config)
+- **Manual Override**: Set `API_BASE_URL` env var for dashboard connection
+
+**Building Containers:**
+```bash
+# Automatically reads ports from config.yaml
+uv run python build_docker.py
+
+# Build specific service
+uv run python build_docker.py api
+uv run python build_docker.py dashboard
+```
+
 ### Configuration Files
-- **`config/config.yaml`**: Main application configuration
+- **`config/config.yaml`**: Main application configuration with port settings
 - **`config/stocks.yaml`**: Stock symbols and metadata
 - **`pyproject.toml`**: Python dependencies and project metadata
 - **`.env.template`**: Environment variable template
+- **`PORT_CONFIG.md`**: Detailed port configuration documentation
 
 ## 📊 Performance & Monitoring
 

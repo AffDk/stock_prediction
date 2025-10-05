@@ -282,13 +282,24 @@ async def get_supported_symbols():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
     print("Starting API server...")
     
     # Initialize model before starting server
     init_model()
     
+    # Use PORT environment variable (Google Cloud Run) or default from config
+    port = int(os.getenv("PORT", "8080"))  # Default to 8080 for consistency
+    host = "0.0.0.0" if os.getenv("PORT") else "127.0.0.1"  # Cloud vs local binding
+    
+    print(f"Server configuration: {host}:{port}")
+    if os.getenv("PORT"):
+        print("🌥️  Cloud deployment mode (PORT env var detected)")
+    else:
+        print("🏠 Local development mode")
+    
     try:
-        uvicorn.run(app, host="127.0.0.1", port=8889, log_level="info")
+        uvicorn.run(app, host=host, port=port, log_level="info")
     except KeyboardInterrupt:
         print("Server stopped by user")
     except Exception as e:
