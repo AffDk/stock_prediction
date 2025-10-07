@@ -4,6 +4,7 @@ FROM python:3.11-slim
 # Build arguments for configurable ports (defaults from config)
 ARG API_PORT=8080
 ENV DEFAULT_PORT=${API_PORT}
+ENV PORT=${API_PORT}
 
 # Set working directory
 WORKDIR /app

@@ -1,0 +1,16 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-f'
+  - 'Dockerfile.dashboard'
+  - '-t'
+  - 'gcr.io/proud-curve-473118-h6/stock-prediction-dashboard:latest'
+  - '.'
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
+  - 'gcr.io/proud-curve-473118-h6/stock-prediction-dashboard:latest'
+images:
+- 'gcr.io/proud-curve-473118-h6/stock-prediction-dashboard:latest'
+timeout: 1200s

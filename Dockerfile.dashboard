@@ -4,6 +4,7 @@ FROM python:3.11-slim
 # Build arguments for configurable ports (defaults from config)
 ARG DASHBOARD_PORT=8501
 ENV DEFAULT_PORT=${DASHBOARD_PORT}
+ENV PORT=${DASHBOARD_PORT}
 
 # Set working directory
 WORKDIR /app

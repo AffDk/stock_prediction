@@ -1,0 +1,50 @@
+# Essential files for deployment (explicitly include)
+# Nothing - include everything by default except what's listed below
+
+# Ignore version control files
+.git/
+.gitignore
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ignore virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore log files
+logs/
+*.log
+
+# Ignore test files and directories  
+tests/
+test_*.py
+*_test.py
+
+# Ignore development files
+.env.local
+.env.development
+.specstory/
+
+# Ignore large data files - we'll use GCS for these
+data/raw/
+raw_data/
+*.parquet
+*.csv
+*.json.gz
+
+# Ignore Jupyter notebooks
+notebooks/
+*.ipynb
